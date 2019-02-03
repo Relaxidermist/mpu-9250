@@ -5,13 +5,23 @@
 #define acc_y_req       0x3D
 #define acc_z_req       0x3F
 
+#define gyro_x_req      0x43
+#define gyro_y_req      0x45
+#define gyro_z_req      0x47
+
+#define period          50
+
+float Tilt, newTilt, rate;
+
 void setup() {
 Wire.begin(); // Join I2C bus as a master.
 Serial.begin(115200);
+Tilt = 0;
 }
 
 void loop() {
   // Accelerometer section
+  /*
    Serial.print("X_ACC:  ");
    Serial.print(ReadHiLoBytes(acc_x_req));
    Serial.print(" Y_ACC: ");
@@ -19,8 +29,25 @@ void loop() {
    Serial.print(" Z_ACC: ");
    Serial.println(ReadHiLoBytes(acc_z_req));
    delay(50);
-
+*/
    //Gyro section
+   Serial.print("X_TILT:  ");
+   rate = ReadHiLoBytes(gyro_x_req);
+   Serial.print(rate);
+   Serial.print(" ");
+   delay(period);
+   newTilt = (rate*period)/1000;
+   Tilt = Tilt + newTilt;
+   Serial.println(Tilt);
+   
+   /*
+   Serial.print(" Y_TILT: ");
+   Serial.print(ReadHiLoBytes(gyro_y_req));
+   Serial.print(" Z_TILT: ");
+   Serial.println(ReadHiLoBytes(gyro_z_req));
+   */
+   //delay(1000);
+   
 }
 
 
