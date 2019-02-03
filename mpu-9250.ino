@@ -11,13 +11,16 @@ Serial.begin(115200);
 }
 
 void loop() {
-   Serial.print("XOUT:  ");
+  // Accelerometer section
+   Serial.print("X_ACC:  ");
    Serial.print(ReadHiLoBytes(acc_x_req));
-   Serial.print(" YOUT: ");
+   Serial.print(" Y_ACC: ");
    Serial.print(ReadHiLoBytes(acc_y_req));
-   Serial.print(" ZOUT: ");
+   Serial.print(" Z_ACC: ");
    Serial.println(ReadHiLoBytes(acc_z_req));
    delay(50);
+
+   //Gyro section
 }
 
 
