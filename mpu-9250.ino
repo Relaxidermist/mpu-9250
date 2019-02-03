@@ -5,9 +5,6 @@
 #define acc_y_req       0x3D
 #define acc_z_req       0x3F
 
-int acc_xout_h, acc_xout_l, acc_yout_h, acc_yout_l, acc_zout_h, acc_zout_l;
-float acc_xout, acc_yout, acc_zout;
-
 void setup() {
 Wire.begin(); // Join I2C bus as a master.
 Serial.begin(115200);
