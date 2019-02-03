@@ -14,50 +14,32 @@ Serial.begin(115200);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+   Serial.print("XOUT:  ");
+   Serial.print(ReadHiLoBytes(acc_x_req));
+   Serial.print(" YOUT: ");
+   Serial.print(ReadHiLoBytes(acc_y_req));
+   Serial.print(" ZOUT: ");
+   Serial.println(ReadHiLoBytes(acc_z_req));
+   delay(50);
+}
 
+
+// ReadHiLoBytes from the MPU-9250 and return the joined values. Used initallty for accelerometer
+float ReadHiLoBytes(int reg){
+  
+  int HiByte, LoByte;
+  float Result;
+  
   Wire.beginTransmission(mpu9250_address);
-  Wire.write(acc_x_req);
+  Wire.write(reg);
   Wire.endTransmission(mpu9250_address);
   Wire.requestFrom(mpu9250_address, 2);
   if(Wire.available()>=2){
+    HiByte = Wire.read();
+    LoByte = Wire.read();
 
-    acc_xout_h = Wire.read();
-    acc_xout_l = Wire.read();
-
-    acc_xout_h = acc_xout_h << 8;
-    acc_xout = (float(acc_xout_h) + float(acc_xout_l))/16384; // Divide by sensitvity
+    HiByte = HiByte << 8;
+    Result = (float(HiByte) + float(LoByte))/16384;
   }
-  
-  Wire.beginTransmission(mpu9250_address);
-  Wire.write(acc_y_req);
-  Wire.endTransmission(mpu9250_address);
-  Wire.requestFrom(mpu9250_address, 2);
-   if(Wire.available()>=2){
-
-    acc_yout_h = Wire.read();
-    acc_yout_l = Wire.read();
-
-    acc_yout_h = acc_yout_h << 8;
-    acc_yout = (float(acc_yout_h) + float(acc_yout_l))/16384; // Divide by sensitvity
-  }
-  
-  Wire.beginTransmission(mpu9250_address);
-  Wire.write(acc_z_req);
-  Wire.endTransmission(mpu9250_address);
-  Wire.requestFrom(mpu9250_address, 2);
-  
-      acc_zout_h= Wire.read();
-      acc_zout_l = Wire.read();
-
-      acc_zout_h = acc_zout_h << 8;
-      acc_zout = (float(acc_zout_h) + float(acc_zout_l))/16384;
-      
-   Serial.print("XOUT:  ");
-   Serial.print(acc_xout);
-   Serial.print(" YOUT: ");
-   Serial.print(acc_yout);
-   Serial.print(" ZOUT: ");
-   Serial.println(acc_zout);
-   delay(50);
+  return Result;
 }
