@@ -134,3 +134,6 @@ vectors getTilt(int reg, vectors calTilts){
    
    return deltaTilt;
 }
+
+
+// Magnetometer Code to go here.
