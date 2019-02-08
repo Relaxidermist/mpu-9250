@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include <math.h>
 
 #define mpu9250_address 0x68
 #define acc_x_req       0x3B
@@ -22,13 +23,16 @@ vectors accelerations, deltaTilts, cal_offsets;
 
 float xTilt, yTilt, zTilt;
 bool cal;
+int asa_x, asa_y, asa_z;
 
 void setup() {
 xTilt = 0; yTilt = 0; zTilt = 0;  
 Wire.begin(); // Join I2C bus as a master.
 delay(100);
-config_mpu9250();
+
 Serial.begin(115200);
+
+config_mpu9250();
 cal = false;
 
 }
@@ -36,7 +40,7 @@ cal = false;
 void loop() {
     // debugging magnetometer 
     magnetometer();
-    //delay(1);
+    delay(100);
     /*
 
     
@@ -180,13 +184,16 @@ vectors magnetometer(){
         magnetic.z = HiBytez + LoBytez;
         
         Serial.print("MAG_X: ");
-        Serial.print(magnetic.x);
+        Serial.print(0.6*magnetic.x);
         Serial.print("  MAG_Y:  ");
-        Serial.print(magnetic.y);
+        Serial.print(0.6*magnetic.y);
         Serial.print("  MAG_Z:  ");
-        Serial.print(magnetic.z);
+        Serial.print(0.6*magnetic.z);
         Serial.print("  Stat_2: ");
-        Serial.println(stat_2);
+        Serial.print(stat_2);
+        Serial.println("  ANGLE:  ");
+        Serial.println((180/3.14159)*atan2((magnetic.y),(magnetic.x)));
+        
       }
     }
   }
@@ -202,4 +209,26 @@ void config_mpu9250(){
   Wire.write(0x0A);
   Wire.write(0x16);
   Wire.endTransmission();
+  delay(100);
+  Wire.beginTransmission(0x0C);
+  Wire.write(0x10);
+  Wire.endTransmission();
+  Wire.requestFrom(0x0C, 3);
+  if(Wire.available()>=3){
+    asa_x = Wire.read();
+    asa_y = Wire.read();
+    asa_z = Wire.read();
+
+    Serial.print("ASA_X:  ");
+    Serial.print(asa_x);
+    Serial.print("  ASA_Y:  ");
+    Serial.print(asa_y);
+    Serial.print("  ASA_Z:  ");
+    Serial.println(asa_z);
+    delay(1000);
+  }
+  else{
+    Serial.println("No Bytes");
+    delay(1000);
+  }
 }
