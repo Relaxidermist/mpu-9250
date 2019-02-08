@@ -26,12 +26,20 @@ bool cal;
 void setup() {
 xTilt = 0; yTilt = 0; zTilt = 0;  
 Wire.begin(); // Join I2C bus as a master.
+delay(100);
+config_mpu9250();
 Serial.begin(115200);
 cal = false;
 
 }
 
 void loop() {
+    // debugging magnetometer 
+    magnetometer();
+    //delay(1);
+    /*
+
+    
        //Gyro section
     if(cal==false){
        cal_offsets = calGyro();
@@ -59,6 +67,7 @@ void loop() {
     Serial.print(accelerations.y);
     Serial.print(" ACC_Z: ");
     Serial.println(accelerations.z);
+    */
 }
 
 
@@ -137,3 +146,60 @@ vectors getTilt(int reg, vectors calTilts){
 
 
 // Magnetometer Code to go here.
+
+vectors magnetometer(){
+  vectors magnetic;
+  
+  int HiBytex, LoBytex, HiBytey, LoBytey, HiBytez, LoBytez, stat_2;
+  
+  Wire.beginTransmission(0x0C);
+  Wire.write(0x02);
+  Wire.endTransmission();
+  Wire.requestFrom(0x0C, 1);
+  if(Wire.available()>=1){
+    if(Wire.read()>=1){
+      Wire.beginTransmission(0x0C);
+      Wire.write(0x03);
+      Wire.endTransmission();
+      Wire.requestFrom(0x0C,7);
+      if(Wire.available()>=7){
+        LoBytex = Wire.read();
+        HiBytex = Wire.read();
+        LoBytey = Wire.read();
+        HiBytey = Wire.read();
+        LoBytez = Wire.read();
+        HiBytez = Wire.read();
+        stat_2 = Wire.read();
+
+        HiBytex = HiBytex << 8;
+        HiBytey = HiBytey << 8;
+        HiBytez = HiBytez << 8;
+
+        magnetic.x = HiBytex + LoBytex;
+        magnetic.y = HiBytey + LoBytey;
+        magnetic.z = HiBytez + LoBytez;
+        
+        Serial.print("MAG_X: ");
+        Serial.print(magnetic.x);
+        Serial.print("  MAG_Y:  ");
+        Serial.print(magnetic.y);
+        Serial.print("  MAG_Z:  ");
+        Serial.print(magnetic.z);
+        Serial.print("  Stat_2: ");
+        Serial.println(stat_2);
+      }
+    }
+  }
+  else{
+    Serial.println("No Bytes");
+  }
+  return magnetic;
+}
+
+void config_mpu9250(){
+
+  Wire.beginTransmission(0x0C);
+  Wire.write(0x0A);
+  Wire.write(0x16);
+  Wire.endTransmission();
+}
