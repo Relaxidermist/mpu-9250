@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include <math.h>
 
 #define mpu9250_address 0x68
 #define acc_x_req       0x3B
@@ -22,16 +23,26 @@ vectors accelerations, deltaTilts, cal_offsets;
 
 float xTilt, yTilt, zTilt;
 bool cal;
+int asa_x, asa_y, asa_z;
 
 void setup() {
 xTilt = 0; yTilt = 0; zTilt = 0;  
 Wire.begin(); // Join I2C bus as a master.
+delay(100);
+
 Serial.begin(115200);
+
+config_mpu9250();
 cal = false;
 
 }
 
 void loop() {
+    // debugging magnetometer 
+    //magnetometer();
+    //delay(100);
+
+    
        //Gyro section
     if(cal==false){
        cal_offsets = calGyro();
@@ -59,6 +70,7 @@ void loop() {
     Serial.print(accelerations.y);
     Serial.print(" ACC_Z: ");
     Serial.println(accelerations.z);
+
 }
 
 
@@ -133,4 +145,89 @@ vectors getTilt(int reg, vectors calTilts){
    deltaTilt.z = 131*(deltaTilt.z-calTilts.z)*(0.001*delta_t);
    
    return deltaTilt;
+}
+
+
+// Magnetometer Code to go here.
+
+vectors magnetometer(){
+  vectors magnetic;
+  
+  int HiBytex, LoBytex, HiBytey, LoBytey, HiBytez, LoBytez, stat_2;
+  
+  Wire.beginTransmission(0x0C);
+  Wire.write(0x02);
+  Wire.endTransmission();
+  Wire.requestFrom(0x0C, 1);
+  if(Wire.available()>=1){
+    if(Wire.read()>=1){
+      Wire.beginTransmission(0x0C);
+      Wire.write(0x03);
+      Wire.endTransmission();
+      Wire.requestFrom(0x0C,7);
+      if(Wire.available()>=7){
+        LoBytex = Wire.read();
+        HiBytex = Wire.read();
+        LoBytey = Wire.read();
+        HiBytey = Wire.read();
+        LoBytez = Wire.read();
+        HiBytez = Wire.read();
+        stat_2 = Wire.read();
+
+        HiBytex = HiBytex << 8;
+        HiBytey = HiBytey << 8;
+        HiBytez = HiBytez << 8;
+
+        magnetic.x = HiBytex + LoBytex;
+        magnetic.y = HiBytey + LoBytey;
+        magnetic.z = HiBytez + LoBytez;
+        
+        Serial.print("MAG_X: ");
+        Serial.print(0.6*magnetic.x);
+        Serial.print("  MAG_Y:  ");
+        Serial.print(0.6*magnetic.y);
+        Serial.print("  MAG_Z:  ");
+        Serial.print(0.6*magnetic.z);
+        Serial.print("  Stat_2: ");
+        Serial.print(stat_2);
+        Serial.println("  ANGLE:  ");
+        Serial.println((180/3.14159)*atan2((magnetic.y),(magnetic.x)));
+        
+      }
+    }
+  }
+  else{
+    Serial.println("No Bytes");
+  }
+  return magnetic;
+}
+
+void config_mpu9250(){
+
+  Wire.beginTransmission(0x0C);
+  Wire.write(0x0A);
+  Wire.write(0x16);
+  Wire.endTransmission();
+  delay(100);
+  Wire.beginTransmission(0x0C);
+  Wire.write(0x10);
+  Wire.endTransmission();
+  Wire.requestFrom(0x0C, 3);
+  if(Wire.available()>=3){
+    asa_x = Wire.read();
+    asa_y = Wire.read();
+    asa_z = Wire.read();
+
+    Serial.print("ASA_X:  ");
+    Serial.print(asa_x);
+    Serial.print("  ASA_Y:  ");
+    Serial.print(asa_y);
+    Serial.print("  ASA_Z:  ");
+    Serial.println(asa_z);
+    delay(1000);
+  }
+  else{
+    Serial.println("No Bytes");
+    delay(1000);
+  }
 }
