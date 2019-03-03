@@ -39,9 +39,8 @@ cal = false;
 
 void loop() {
     // debugging magnetometer 
-    magnetometer();
-    delay(100);
-    /*
+    //magnetometer();
+    //delay(100);
 
     
        //Gyro section
@@ -71,7 +70,7 @@ void loop() {
     Serial.print(accelerations.y);
     Serial.print(" ACC_Z: ");
     Serial.println(accelerations.z);
-    */
+
 }
 
 
