@@ -28,9 +28,7 @@ int asa_x, asa_y, asa_z;
 unsigned long tstart, tfin;
 float dt;
 
-float acc_angle;
-
-
+float acc_anglex, acc_angley, acc_anglez;
 
 void setup() {
 xTilt = 0; yTilt = 0; zTilt = 0;  
@@ -66,7 +64,9 @@ void loop() {
 
     //trigonometry
 
-    acc_angle = (180/3.141)*asin(accelerations.x);
+    acc_anglex = (180/3.141)*asin(accelerations.x);
+    acc_angley = (180/3.141)*asin(accelerations.y);
+    acc_anglez = (180/3.141)*asin(accelerations.z);
     
     
         
@@ -85,12 +85,11 @@ void loop() {
     Serial.print(" | ");
     
     Serial.print("ACC_X: ");
-    //Serial.print(accelerations.x);
-    Serial.print(acc_angle);
+    Serial.print(acc_anglex);
     Serial.print(" ACC_Y: ");
-    Serial.print(accelerations.y);
+    Serial.print(acc_angley);
     Serial.print(" ACC_Z: ");
-    Serial.print(accelerations.z);
+    Serial.print(acc_anglez);
     
     Serial.print(" dt = ");
     Serial.println(dt);
