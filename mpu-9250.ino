@@ -25,10 +25,17 @@ float xTilt, yTilt, zTilt;
 bool cal;
 int asa_x, asa_y, asa_z;
 
+unsigned long tstart, tfin;
+float dt;
+
 void setup() {
 xTilt = 0; yTilt = 0; zTilt = 0;  
 Wire.begin(); // Join I2C bus as a master.
 delay(100);
+
+tstart = 0;
+tfin = 0;
+dt = 0;
 
 Serial.begin(115200);
 
@@ -38,19 +45,26 @@ cal = false;
 }
 
 void loop() {
-    // debugging magnetometer 
-    //magnetometer();
-    //delay(100);
-
     
        //Gyro section
     if(cal==false){
        cal_offsets = calGyro();
        cal = true;
-    }  
+    }
+    //reset gyro here
+    if(accelerations.x < 0.05 and accelerations.y < 0.05 and accelerations.z > 0.97){
+      xTilt = 0;
+      yTilt = 0;
+      zTilt = 0;  
+    }
     // Accelerometer section
     accelerations = ReadHiLoBytes(acc_x_req);
-          
+
+    // debugging timer
+
+    tstart = millis();
+
+        
     deltaTilts = getTilt(gyro_x_req, cal_offsets);  
     
     xTilt += deltaTilts.x;
@@ -69,7 +83,15 @@ void loop() {
     Serial.print(" ACC_Y: ");
     Serial.print(accelerations.y);
     Serial.print(" ACC_Z: ");
-    Serial.println(accelerations.z);
+    Serial.print(accelerations.z);
+
+    Serial.print(" dt = ");
+    Serial.println(dt);
+
+    delay(10);
+    tfin = millis();
+    
+    dt = tfin-tstart;
 
 }
 
@@ -81,20 +103,23 @@ vectors calGyro(){
       calTilts.x = 0; calTilts.y = 0;calTilts.z = 0;
       deltaTilts.x = 0; deltaTilts.y = 0; deltaTilts.z = 0;
       
-  for(int i=0; i<5000; i++){
+  for(int i=0; i<1000; i++){
       deltaTilts = ReadHiLoBytes(gyro_x_req);
 
       calTilts.x += deltaTilts.x;
       calTilts.y += deltaTilts.y;
       calTilts.z += deltaTilts.z;
-      delay(1);
+
+      
+      Serial.println("Calibrating...");
+      
     }
     
-    calTilts.x = calTilts.x/5000;
-    calTilts.y = calTilts.y/5000;
-    calTilts.z = calTilts.z/5000;
+    calTilts.x = calTilts.x/1000;
+    calTilts.y = calTilts.y/1000;
+    calTilts.z = calTilts.z/1000;
 
-    delay(5000);
+    //delay(5000);
 
     return calTilts;
    }
@@ -134,15 +159,19 @@ vectors getTilt(int reg, vectors calTilts){
   int t1, t2, delta_t;
   vectors deltaTilt;
 
-   t1 = millis();
+   //t1 = millis();
    deltaTilt = ReadHiLoBytes(reg);
-   delay(20);
-   t2 = millis();
+   //delay(20);
+   //t2 = millis();
    delta_t = t2-t1;
-   
+   /*
    deltaTilt.x = 131*(deltaTilt.x-calTilts.x)*(0.001*delta_t);
    deltaTilt.y = 131*(deltaTilt.y-calTilts.y)*(0.001*delta_t);
    deltaTilt.z = 131*(deltaTilt.z-calTilts.z)*(0.001*delta_t);
+   */
+   deltaTilt.x = 131*(deltaTilt.x-calTilts.x)*(0.001*dt);
+   deltaTilt.y = 131*(deltaTilt.y-calTilts.y)*(0.001*dt);
+   deltaTilt.z = 131*(deltaTilt.z-calTilts.z)*(0.001*dt);
    
    return deltaTilt;
 }
