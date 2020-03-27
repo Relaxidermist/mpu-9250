@@ -28,6 +28,10 @@ int asa_x, asa_y, asa_z;
 unsigned long tstart, tfin;
 float dt;
 
+float acc_angle;
+
+
+
 void setup() {
 xTilt = 0; yTilt = 0; zTilt = 0;  
 Wire.begin(); // Join I2C bus as a master.
@@ -60,10 +64,11 @@ void loop() {
     // Accelerometer section
     accelerations = ReadHiLoBytes(acc_x_req);
 
-    // debugging timer
+    //trigonometry
 
-    tstart = millis();
-
+    acc_angle = (180/3.141)*asin(accelerations.x);
+    
+    
         
     deltaTilts = getTilt(gyro_x_req, cal_offsets);  
     
@@ -78,21 +83,23 @@ void loop() {
     Serial.print(" TILT_Z: ");
     Serial.print(zTilt);
     Serial.print(" | ");
+    
     Serial.print("ACC_X: ");
-    Serial.print(accelerations.x);
+    //Serial.print(accelerations.x);
+    Serial.print(acc_angle);
     Serial.print(" ACC_Y: ");
     Serial.print(accelerations.y);
     Serial.print(" ACC_Z: ");
     Serial.print(accelerations.z);
-
+    
     Serial.print(" dt = ");
     Serial.println(dt);
 
-    delay(10);
+    //delay(10);
     tfin = millis();
     
     dt = tfin-tstart;
-
+    tstart = millis();
 }
 
 
