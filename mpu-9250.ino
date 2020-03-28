@@ -28,10 +28,11 @@ int asa_x, asa_y, asa_z;
 unsigned long tstart, tfin;
 float dt;
 
-float acc_anglex, acc_angley, acc_anglez;
+float acc_anglex, acc_angley, acc_anglez, filteredx, filteredy, filteredz;
 
 void setup() {
 xTilt = 0; yTilt = 0; zTilt = 0;  
+filteredx = 0; filteredy = 0; filteredz = 0;
 Wire.begin(); // Join I2C bus as a master.
 delay(100);
 
@@ -54,18 +55,22 @@ void loop() {
        cal = true;
     }
     //reset gyro here
+
+    
     if(accelerations.x < 0.05 and accelerations.y < 0.05 and accelerations.z > 0.97){
       xTilt = 0;
       yTilt = 0;
       zTilt = 0;  
     }
+
+    filteredx = (0.90*xTilt + 0.1*acc_anglex);
+    filteredy = (0.90*yTilt + 0.1*acc_angley);
+    
     // Accelerometer section
     accelerations = ReadHiLoBytes(acc_x_req);
-
-    //trigonometry
-
-    acc_anglex = (180/3.141)*asin(accelerations.x);
-    acc_angley = (180/3.141)*asin(accelerations.y);
+    
+    acc_anglex = (180/3.141)*asin(accelerations.y);
+    acc_angley = -1*(180/3.141)*asin(accelerations.x);
     acc_anglez = (180/3.141)*asin(accelerations.z);
     
     
@@ -90,7 +95,12 @@ void loop() {
     Serial.print(acc_angley);
     Serial.print(" ACC_Z: ");
     Serial.print(acc_anglez);
-    
+/*
+    Serial.print("Fx: ");
+    Serial.print(filteredx);
+    Serial.print("Fy: ");
+    Serial.print(filteredy);
+  */  
     Serial.print(" dt = ");
     Serial.println(dt);
 
